@@ -1,0 +1,27 @@
+{
+    "private": true,
+    "name": "kentik-viz",
+    "version": "2.1.1",
+    "scripts": {
+        "start": "nr1 nerdpack:serve",
+        "test": "exit 0"
+    },
+    "nr1": {
+        "uuid": "ada522bb-e9d8-4a50-9a82-c51d048c25e6"
+    },
+    "dependencies": {
+        "d3-sankey": "^0.12.3",
+        "d3-selection": "^2.0.0",
+        "leaflet": "^1.7.1",
+        "prop-types": "^15.6.2",
+        "react": "^16.6.3",
+        "react-dom": "^16.6.3",
+        "react-leaflet": "^2.8.0",
+        "recharts": "^2.0.9"
+    },
+    "browserslist": [
+        "last 2 versions",
+        "not ie < 11",
+        "not dead"
+    ]
+}
