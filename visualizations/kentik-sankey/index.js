@@ -246,7 +246,7 @@ export default class SankeyVisualization extends React.Component {
         dimensionLeft,
         dimensionRight,
         "`bits/s_in`",
-        `bits/s_out`,
+        "`bits/s_out`",
         "sample_rate",
       ].every((item) => nrqlQueries[0].query.includes(item));
 
@@ -322,12 +322,9 @@ const EmptyState = () => (
         An example NRQL query you can try is:
       </HeadingText>
       <code>
-        FROM KFlow
-        SELECT src_geo, dst_geo, vlan_in, vlan_out, sample_rate
-        WHERE dst_geo != '--' AND src_geo != '--'
-        AND dst_geo IS NOT NULL or src_geo IS NOT NULL
-        AND vlan_in IS NOT NULL AND vlan_out IS NOT NULL
-        SINCE 7 days ago LIMIT 100
+      SELECT src_geo, dst_geo, `bits/s_in`, `bits/s_out`, sample_rate from
+        KFlow where dst_geo != '--' and src_geo != '--' and `bits/s_in` is not
+        null and `bits/s_out` is not null since 7 days ago limit 1000
       </code>
     </CardBody>
   </Card>
