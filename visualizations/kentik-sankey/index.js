@@ -1,10 +1,12 @@
-import React, { Fragment } from "react";
+import React, {Fragment} from "react";
 import PropTypes from "prop-types";
-import { sankey, sankeyLinkHorizontal } from 'd3-sankey';
-import { select } from "d3-selection";
+import {sankey, sankeyLinkHorizontal} from 'd3-sankey';
+import {select} from "d3-selection";
 
-import { AutoSizer, Card, CardBody, HeadingText, NrqlQuery, Spinner, TableChart } from "nr1";
-import { formatBytesGreek } from "../greekPrefixing";
+import {AutoSizer, Card, CardBody, HeadingText, NrqlQuery, Spinner, TableChart} from "nr1";
+import {formatBytesGreek} from "../greekPrefixing";
+import NoDataState from '../../src/no-data-state';
+import NrqlQueryError from '../../src/nrql-query-error';
 import colors from "../colors";
 
 export default class SankeyVisualization extends React.Component {
@@ -261,18 +263,25 @@ export default class SankeyVisualization extends React.Component {
         )}
 
         <AutoSizer>
-          {({ width, height }) => (
+          {({width, height}) => (
             <NrqlQuery
               query={nrqlQueries[0].query}
               accountId={parseInt(nrqlQueries[0].accountId)}
               pollInterval={NrqlQuery.AUTO_POLL_INTERVAL}
             >
-              {({ data, loading, error }) => {
+              {({data, loading, error}) => {
                 if (loading) {
                   return <Spinner />;
                 }
                 if (error) {
-                  return <ErrorState />;
+                  return <NrqlQueryError
+                    title="NRQL Syntax Error"
+                    description={error.message}
+                  />;
+                }
+
+                if (data.length === 0) {
+                  return <NoDataState />
                 }
 
                 return (
@@ -313,24 +322,14 @@ const EmptyState = () => (
         An example NRQL query you can try is:
       </HeadingText>
       <code>
-        SELECT src_geo, dst_geo, `bits/s_in`, `bits/s_out`, sample_rate from
-        KFlow where dst_geo != '--' and src_geo != '--' and `bits/s_in` is not
-        null and `bits/s_out` is not null since 7 days ago limit 100
+        FROM KFlow
+        SELECT src_geo, dst_geo, vlan_in, vlan_out, sample_rate
+        WHERE dst_geo != '--' AND src_geo != '--'
+        AND dst_geo IS NOT NULL or src_geo IS NOT NULL
+        AND vlan_in IS NOT NULL AND vlan_out IS NOT NULL
+        SINCE 7 days ago LIMIT 100
       </code>
     </CardBody>
   </Card>
 );
 
-const ErrorState = () => (
-  <Card className="ErrorState">
-    <CardBody className="ErrorState-cardBody">
-      <HeadingText
-        className="ErrorState-headingText"
-        spacingType={[HeadingText.SPACING_TYPE.LARGE]}
-        type={HeadingText.TYPE.HEADING_3}
-      >
-        Oops! Something went wrong.
-      </HeadingText>
-    </CardBody>
-  </Card>
-);
