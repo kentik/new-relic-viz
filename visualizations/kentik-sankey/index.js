@@ -80,6 +80,15 @@ export default class SankeyVisualization extends React.Component {
     };
   };
 
+  transformData = (rawData) => {
+    const query = this.props.nrqlQueries[0].query
+    if(query.toLowerCase().includes('facet')) {
+      return this.transformFacetData(rawData)
+    } else {
+      return this.transformEventData(rawData)
+    }
+  }
+
   /**
    * Restructure the data for a non-time-series, event-based NRQL query into a
    * form accepted by D3's Sankey.
@@ -117,6 +126,16 @@ export default class SankeyVisualization extends React.Component {
     return { nodes: Object.values(nodes), links: Object.values(links) };
   };
 
+  validateNrql = () => {
+    const { dimensionLeft, dimensionRight, nrqlQueries } = this.props;
+    // Should these be required for aggregate queries? OR can we allow the user to aggregate their own query 
+    const requiredAttributes = ["in_bytes", "sample_rate"]
+
+    return [dimensionLeft, dimensionRight, ...requiredAttributes].every(
+      (item) => nrqlQueries[0].query.includes(item)
+    );
+  };
+
   setPopup = (link, event) => {
     this.setState({
       popupPos: { pageX: event.pageX, pageY: event.pageY },
@@ -144,7 +163,7 @@ export default class SankeyVisualization extends React.Component {
   };
 
   renderSankey = (data, width, height) => {
-    const transformedData = this.transformEventData(data);
+    const transformedData = this.transformData(data)
 
     const { nodes, links } = sankey()
       .nodeId((d) => {
@@ -241,12 +260,7 @@ export default class SankeyVisualization extends React.Component {
       nrqlQueries[0] &&
       nrqlQueries[0].accountId &&
       nrqlQueries[0].query &&
-      [
-        dimensionLeft,
-        dimensionRight,
-        "in_bytes",
-        "sample_rate",
-      ].every((item) => nrqlQueries[0].query.includes(item));
+      this.validateNrql()
 
     if (!nrqlQueryPropsAvailable) {
       return <EmptyState />;
@@ -310,8 +324,7 @@ const EmptyState = () => (
         Please provide the Left and Right dimensions and at least one NRQL query
         &amp; account ID pair.
         <br />
-        Your NRQL should include both dimensions, `bits/s_in`, `bits/s_out` and
-        sample_rate.
+        Your NRQL should include both dimensions, in_bytes, and sample_rate or a single aggregate and two facets for your left and right dimensions.
       </HeadingText>
       <HeadingText
         spacingType={[HeadingText.SPACING_TYPE.MEDIUM]}
@@ -322,11 +335,24 @@ const EmptyState = () => (
       <code>
         FROM KFlow
         SELECT src_geo, dst_geo, in_bytes, sample_rate
-        WHERE dst_geo != '--' and src_geo != '--' 
+        WHERE dst_geo != '--' AND src_geo != '--' 
         AND src_geo IS NOT NULL OR dst_geo IS NOT NULL  
         AND in_bytes IS NOT NULL 
         SINCE 7 days ago 
         LIMIT 1000 
+      </code>
+      <HeadingText
+        spacingType={[HeadingText.SPACING_TYPE.MEDIUM]}
+        type={HeadingText.TYPE.HEADING_4}
+      >
+        An example NRQL query you can try is:
+      </HeadingText>
+      <code>
+        FROM KFlow 
+        SELECT rate(sum(in_bytes*sample_rate)*8/1000/1000, 1 second) AS mbits 
+        FACET src_geo, dst_geo 
+        WHERE src_geo IS NOT NULL OR dst_geo IS NOT NULL 
+        SINCE 1 day ago
       </code>
     </CardBody>
   </Card>
