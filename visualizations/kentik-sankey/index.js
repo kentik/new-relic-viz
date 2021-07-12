@@ -111,8 +111,7 @@ export default class SankeyVisualization extends React.Component {
         target: rightKey,
         value: 0,
       };
-      links[linkKey].value +=
-        (item["bits/s_in"] + item["bits/s_out"]) * item.sample_rate;
+      links[linkKey].value += item["in_bytes"] * item.sample_rate;
     });
 
     return { nodes: Object.values(nodes), links: Object.values(links) };
@@ -245,8 +244,7 @@ export default class SankeyVisualization extends React.Component {
       [
         dimensionLeft,
         dimensionRight,
-        "`bits/s_in`",
-        "`bits/s_out`",
+        "in_bytes",
         "sample_rate",
       ].every((item) => nrqlQueries[0].query.includes(item));
 
@@ -322,9 +320,13 @@ const EmptyState = () => (
         An example NRQL query you can try is:
       </HeadingText>
       <code>
-      SELECT src_geo, dst_geo, `bits/s_in`, `bits/s_out`, sample_rate from
-        KFlow where dst_geo != '--' and src_geo != '--' and `bits/s_in` is not
-        null and `bits/s_out` is not null since 7 days ago limit 1000
+        FROM KFlow
+        SELECT src_geo, dst_geo, in_bytes, sample_rate
+        WHERE dst_geo != '--' and src_geo != '--' 
+        AND src_geo IS NOT NULL OR dst_geo IS NOT NULL  
+        AND in_bytes IS NOT NULL 
+        SINCE 7 days ago 
+        LIMIT 1000 
       </code>
     </CardBody>
   </Card>
