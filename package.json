@@ -10,6 +10,7 @@
         "uuid": "ada522bb-e9d8-4a50-9a82-c51d048c25e6"
     },
     "dependencies": {
+        "classnames": "^2.3.1",
         "d3-sankey": "^0.12.3",
         "d3-selection": "^2.0.0",
         "leaflet": "^1.7.1",
