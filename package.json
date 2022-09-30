@@ -18,7 +18,7 @@
         "react": "^16.6.3",
         "react-dom": "^16.6.3",
         "react-leaflet": "^2.8.0",
-        "recharts": "^2.0.9"
+        "recharts": "^2.1.14"
     },
     "browserslist": [
         "last 2 versions",
